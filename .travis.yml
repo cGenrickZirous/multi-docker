@@ -1,0 +1,27 @@
+sudo: required
+servies:
+  - docker
+
+before_install:
+  -docker build -t cartergenrick/react-test -f ./client/Dockerfile.dev . 
+
+script: 
+  - docekr run cartergenrick/react-test npm test -- --coverage #So that eventually the test scripts exists
+  #test running section, if it doesn't work, travis-ci assumes build failed
+
+after_success: 
+  - docker build -t cartergenrick/multi-client ./client
+  - docker build -t cartergenrick/multi-nginx ./nginx
+  - docker build -t cartergenrick/multi-server ./server
+  - docker build -t cartergenrick/multi-worker ./worker
+  #Log in to the docker CLI
+
+  - echo "$DOCKER_PASSWORD" \ docker login -u "$DOCKER_ID" --password-stdin
+
+  #Take those images and push them 
+  - docker push cartergenrici/multi-client
+  - docker push cartergenrici/multi-nginx
+  - docker push cartergenrici/multi-server
+  - docker push cartergenrici/multi-worker
+
+
